@@ -11,11 +11,7 @@
 ;; ;   You must not remove this notice, or any other, from this software.
 
 (ns speaknoteasy.org-test
-  (:import (java.io File))
-  (:use [com.lithinos.amotoen.core] :reload-all)
-  (:use [clojure.test])
-  (:use [clojure.pprint])
-  (:use [speaknoteasy.grammar.org])
+  (:require [instaparse.core :as insta])
   )
 
 
