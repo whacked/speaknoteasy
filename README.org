@@ -1,10 +1,23 @@
 # speaknoteasy
 
-A Clojure library designed to ... well, that part is up to you.
+exploring PEG. current primary interest is to read orgmode files
 
-## Usage
+** links of interest:
 
-FIXME
+- [[http://article.gmane.org/gmane.emacs.orgmode/67871][Nicolas Goaziou's amazing org syntax draft]]
+
+- [[https://github.com/Engelberg/instaparse][Instaparse]]
+  
+  played with amotoen for an hour; see master branch. IMHO much harder to get on the ground.
+
+** TODO
+
+see if any of the treetop grammar in
+[[https://github.com/whacked/TreeDrunk/blob/master/orgmode.treetop][treetop grammar]]
+is useful
+  
+
+
 
 ## License
 
