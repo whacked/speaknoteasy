@@ -1,0 +1,65 @@
+### document = headline | specialblock | comment | list | mixedtext | word | paragraphbreak | multiwhitespace | line
+### document = (heading | mixedtext)*
+document = (mixedtext)*
+
+hyperlink = '[[' #'.'+ ']]'
+<mixedtext> = hyperlink
+            / codetext / boldtext / underlinetext / italicstext / verbatimtext
+            / word
+            / oneormore-whitespace
+
+boldtext = <bold-marker> (!bold-marker any)+ <bold-marker>
+bold-marker = '*'
+
+italicstext = <italics-marker> (!italics-marker any)+ <italics-marker>
+italics-marker = '/'
+
+underlinetext = <underline-marker> (!underline-marker any)+ <underline-marker>
+underline-marker = '_'
+
+verbatimtext = <verbatim-marker> (!verbatim-marker any)+ <verbatim-marker>
+verbatim-marker = '~'
+
+codetext = <code-marker> (!code-marker any)+ <code-marker>
+code-marker = '='
+
+strikethroughtext = <strikethrough-marker> (!strikethrough-marker any)+ <strikethrough-marker>
+strikethrough-marker = '+'
+
+<any>       = #'(?s).'
+
+oneormore-whitespace = #'\s+'
+word = #'[^\s]+'
+
+
+### horizontalrule = "-----" "-"* EOL
+### EOL = "\n" | "\r\n"
+### 
+### heading         = heading-bullet oneormore-whitespace text '\n'
+### heading-bullet = '*'+
+### 
+### text = #'.+'
+### 
+### hyperlink = '"[[" (!"]" .)+ ("][" (!"]" .)+)? "]]"'
+### 
+### plaintext = (!EOL .)+
+### 
+### paragraphbreak = EOL EOL+
+### 
+### multiwhitespace = [\s]+
+### asterisk = [*]
+### nonasterisk = [^*]
+### mixedLineUntilEOL = multiwhitespace (mixedtext / (!EOL .))+
+### headline = asterisk+ mixedLineUntilEOL EOL
+### list = listunordered / listordered
+### listunordered = multiwhitespace ("-" / "+") mixedLineUntilEOL
+###     
+### listordered = multiwhitespace [0-9]+ ("." / ")") mixedLineUntilEOL
+###     
+### line = (!EOL .)* EOL
+### 
+### specialblock = (specialblocksource / specialblockquote / specialblockcatchall)
+### rule specialblockcatchall = "#+" ("begin" / "BEGIN") (!EOL .)* EOL (!"#+end" !"#+END" .)* ("#+end" / "#+END") (!EOL .)* EOL
+### specialblockquote = "#+" ("begin_quote" / "BEGIN_QUOTE") (!EOL .)* EOL (!"#+end_quote" !"#+END_QUOTE" .)* ("#+end_quote" / "#+END_QUOTE") (!EOL [\s])* EOL
+### specialblocksource = "#+" ("begin_src" / "BEGIN_SRC") (!EOL .)* EOL (!"#+end_src" !"#+END_SRC" .)* ("#+end_src" / "#+END_SRC") (!EOL [\s])* EOL
+### comment = EOL? "#" (!EOL .)+ EOL

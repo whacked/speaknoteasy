@@ -30,65 +30,111 @@
   (html (rest (insta/transform mrenderer (orgmode org-string)))))
 (defn- o2h [& arg] (apply org-to-html arg))
 
+
 (do
   (def orgmode
-    (insta/parser "file:./src/speaknoteasy/orgmode.instaparse"))
-  (let [t (orgmode "* helo\n") ;; (orgmode (slurp "src/speaknoteasy/example.org"))
+    ;; (insta/parser "file:./src/speaknoteasy/orgmode.instaparse")
+    ;; filter out commented lines
+    (insta/parser
+     (clojure.string/join
+      "\n"
+      (filter
+       #(and (> (count %) 0) (not= \# (.charAt % 0)))
+       (.split
+        (slurp "src/speaknoteasy/orgmode.instaparse")
+        "\n")))))
+)
+(let [t (orgmode "* helo\n") ;; (orgmode (slurp "src/speaknoteasy/example.org"))
+      ]
 
-        ]
-
-    (insta/transform mrenderer t)
-    ))
+  (insta/transform mrenderer t)
+  )
 
 (deftest heading
   (is (= "<h1>hello</h1>" (o2h "* hello\n")))
   (is (= "<h2>hello</h2>" (o2h "** hello\n")))
   )
 
+(deftest formatting
+  (is (= "<h1>hello</h1>" (o2h "* hello\n")))
+  (is (= "<h2>hello</h2>" (o2h "** hello\n")))
+  )
+
+(orgmode "*bold*")
+(orgmode "*bold* inline *bold* with text *bold*")
+(orgmode "inline _underline_ with text")
+(orgmode "inline /italic!/ with text")
+(orgmode "inline =code=  with text")
+(orgmode "inline ~verbatim~ with text")
+
+(orgmode
+ "Here are 2 kinds of links: [[link-no-description]] does not contain a description but [[link-path][description of the link-path]] does.")
+
+(let [grammar "
+hyperlink = '[[' #'.'+ ']]'
+
+"
+      ]
+  ((insta/parser grammar)
+   "[[link-no-description]]")
+  )
+
+
+(orgmode "[[link-path][description of the link-path]] *asdf*")
+(orgmode "a a")
+
+(defn retrievebytag [ls-orig tagname]
+  ((fn myfn [ls]
+     (if (not (coll? ls))
+       nil
+       (let [remain (rest ls)]
+         (if (= (first ls) tagname)
+
+           remain
+           (do
+             (mapcat myfn remain))
+           )))
+     
+     ) ls-orig))
+
+(let [
+      expected "bold"
+
+      text "
+*bold* inline *bold* with text *bold*
+inline _underline_ with text
+inline /italic!/ with text
+inline =code=  with text
+inline ~verbatim~ with text
+
+
+"
+      ]
+
+  ;; (= expected (apply str (retrievebytag ((insta/parser grammar) text) :any)))
+  ;; (apply str (retrievebytag ((insta/parser grammar) text) :any))
+  (orgmode text)
+  )
+
+(orgmode "*bold* inline *bold* with text *bold*")
+(orgmode "inline _underline_ with text")
+(orgmode "inline /italic!/ with text")
+(orgmode "inline =code=  with text")
+(orgmode "inline ~verbatim~ with text")
+
+
+
 (run-tests)
 
 
 
+((insta/parser
+  "S = (a | b)+; a = 'a'; b = 'b'")
+ "ab")
+((insta/parser
+  "S ='*' (!'z' #'.') '*'")
+ "*x*")
+((insta/parser
+  "S = !'ab' ('a' | 'b')+")
+ "baaaaab")
 
-
-document = headline | specialblock | comment | list | mixedtext | word | paragraphbreak | multiwhitespace | line
-EOL = "\n" | "\r\n"
-paragraphbreak = EOL EOL+
-
-multiwhitespace = [\s]+
-asterisk = [*]
-nonasterisk = [^*]
-mixedLineUntilEOL = multiwhitespace (mixedtext / (!EOL .))+
-headline = asterisk+ mixedLineUntilEOL EOL
-list = listunordered / listordered
-listunordered = multiwhitespace ("-" / "+") mixedLineUntilEOL
-    
-listordered = multiwhitespace [0-9]+ ("." / ")") mixedLineUntilEOL
-    
-line = (!EOL .)* EOL
-
-mixedtext = (hyperlink / codetext / boldtext / underlinedtext / italicstext / verbatimtext / horizontalrule / word)
-
-boldtext = "*" (!"*" .)+ "*"
-
-codetext = "=" (!"=" .)+ "="
-
-underlinedtext = "_" (!"_" .)+ "_"
-
-italicstext = "/" (!"/" .)+ "/"
-
-verbatimtext = "~" (!"~" .)+ "~"
-
-word = (!EOL ![\s] .)+
-
-plaintext = (!EOL .)+
-
-horizontalrule = "-----" "-"* EOL
-
-hyperlink = "[[" (!"]" .)+ ("][" (!"]" .)+)? "]]"
-
-specialblock = (specialblocksource / specialblockquote / specialblockcatchall)
-rule specialblockcatchall = "#+" ("begin" / "BEGIN") (!EOL .)* EOL (!"#+end" !"#+END" .)* ("#+end" / "#+END") (!EOL .)* EOL
-specialblockquote = "#+" ("begin_quote" / "BEGIN_QUOTE") (!EOL .)* EOL (!"#+end_quote" !"#+END_QUOTE" .)* ("#+end_quote" / "#+END_QUOTE") (!EOL [\s])* EOL
-specialblocksource = "#+" ("begin_src" / "BEGIN_SRC") (!EOL .)* EOL (!"#+end_src" !"#+END_SRC" .)* ("#+end_src" / "#+END_SRC") (!EOL [\s])* EOL
-comment = EOL? "#" (!EOL .)+ EOL
