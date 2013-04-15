@@ -2,7 +2,13 @@
 ### document = (heading | mixedtext)*
 document = (mixedtext)*
 
-hyperlink = '[[' #'.'+ ']]'
+hyperlink = <hyperlink-open> hyperlink-path hyperlink-description? <hyperlink-close>
+<hyperlink-enclosed>    = <hyperlink-open> (!hyperlink-close #'.')+ <hyperlink-close>
+hyperlink-path        = hyperlink-enclosed
+hyperlink-description = hyperlink-enclosed
+hyperlink-open  = '['
+hyperlink-close = ']'
+
 <mixedtext> = hyperlink
             / codetext / boldtext / underlinetext / italicstext / verbatimtext
             / word
@@ -40,7 +46,6 @@ word = #'[^\s]+'
 ### 
 ### text = #'.+'
 ### 
-### hyperlink = '"[[" (!"]" .)+ ("][" (!"]" .)+)? "]]"'
 ### 
 ### plaintext = (!EOL .)+
 ### 

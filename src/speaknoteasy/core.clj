@@ -31,18 +31,21 @@
 (defn- o2h [& arg] (apply org-to-html arg))
 
 
+(defn decommented [s]
+  (clojure.string/join
+   "\n"
+   (filter
+    #(and (> (count %) 0) (not= \# (.charAt % 0)))
+    (.split
+     s
+     "\n"))))
+
 (do
   (def orgmode
     ;; (insta/parser "file:./src/speaknoteasy/orgmode.instaparse")
     ;; filter out commented lines
     (insta/parser
-     (clojure.string/join
-      "\n"
-      (filter
-       #(and (> (count %) 0) (not= \# (.charAt % 0)))
-       (.split
-        (slurp "src/speaknoteasy/orgmode.instaparse")
-        "\n")))))
+     (decommented (slurp "src/speaknoteasy/orgmode.instaparse"))))
 )
 (let [t (orgmode "* helo\n") ;; (orgmode (slurp "src/speaknoteasy/example.org"))
       ]
@@ -70,13 +73,12 @@
 (orgmode
  "Here are 2 kinds of links: [[link-no-description]] does not contain a description but [[link-path][description of the link-path]] does.")
 
-(let [grammar "
-hyperlink = '[[' #'.'+ ']]'
-
-"
+(let [grammar (decommented (slurp "src/speaknoteasy/test.instaparse"))
       ]
-  ((insta/parser grammar)
-   "[[link-no-description]]")
+  ((insta/parser (decommented grammar))
+   ;; "[[link-path][description of the link-path]]"
+   "[[link-no-description]]"
+   )
   )
 
 
