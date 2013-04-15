@@ -12,7 +12,7 @@ hyperlink-close = ']'
 
 <mixedtext> = hyperlink
             / codetext / boldtext / underlinetext / italicstext / verbatimtext
-            / word / oneormore-whitespace / EOL
+            / plaintext / EOL
 
 boldtext = <bold-marker> (!bold-marker any)+ <bold-marker>
 bold-marker = '*'
@@ -32,8 +32,7 @@ code-marker = '='
 strikethroughtext = <strikethrough-marker> (!strikethrough-marker any)+ <strikethrough-marker>
 strikethrough-marker = '+'
 
-### text = #'.+'
-### plaintext = (!EOL .)+
+plaintext = (!EOL any)+
 word = #'[^\s]+'
 <any>       = #'(?s).'
 
@@ -63,4 +62,4 @@ listordered   = oneormore-whitespace list-number mixed-line-until-EOL
 ### specialblocksource = '#+' ('begin_src' / 'BEGIN_SRC') (!EOL .)* EOL (!'#+end_src' !'#+END_SRC' .)* ('#+end_src' / '#+END_SRC') (!EOL [\s])* EOL
 
 comment = <comment-inline-marker> (!EOL any)+ EOL?
-comment-inline-marker = '#'
+comment-inline-marker = (!oneormore-whitespace '#'+)
