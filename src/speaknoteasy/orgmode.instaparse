@@ -1,6 +1,7 @@
+
+### from orgmode.treetop
 ### document = headline | specialblock | comment | list | mixedtext | word | paragraphbreak | multiwhitespace | line
-### document = (heading | mixedtext)*
-document = (mixedtext)*
+document = (heading / comment / list / mixedtext)*
 
 hyperlink = <hyperlink-open> hyperlink-path hyperlink-description? <hyperlink-close>
 <hyperlink-enclosed>    = <hyperlink-open> (!hyperlink-close #'.')+ <hyperlink-close>
@@ -11,8 +12,7 @@ hyperlink-close = ']'
 
 <mixedtext> = hyperlink
             / codetext / boldtext / underlinetext / italicstext / verbatimtext
-            / word
-            / oneormore-whitespace
+            / word / oneormore-whitespace / EOL
 
 boldtext = <bold-marker> (!bold-marker any)+ <bold-marker>
 bold-marker = '*'
@@ -32,39 +32,35 @@ code-marker = '='
 strikethroughtext = <strikethrough-marker> (!strikethrough-marker any)+ <strikethrough-marker>
 strikethrough-marker = '+'
 
+### text = #'.+'
+### plaintext = (!EOL .)+
+word = #'[^\s]+'
 <any>       = #'(?s).'
 
-oneormore-whitespace = #'\s+'
-word = #'[^\s]+'
+### this regex captures newlines
+### oneormore-whitespace = #'\s+'
+oneormore-whitespace = (' ' | '\t')+
 
+horizontalrule = #'^\s*-{5,}' ' '* <EOL>
+EOL = "\n" | "\r\n"
+paragraphbreak = EOL EOL+
 
-### horizontalrule = "-----" "-"* EOL
-### EOL = "\n" | "\r\n"
-### 
-### heading         = heading-bullet oneormore-whitespace text '\n'
-### heading-bullet = '*'+
-### 
-### text = #'.+'
-### 
-### 
-### plaintext = (!EOL .)+
-### 
-### paragraphbreak = EOL EOL+
-### 
-### multiwhitespace = [\s]+
-### asterisk = [*]
-### nonasterisk = [^*]
-### mixedLineUntilEOL = multiwhitespace (mixedtext / (!EOL .))+
-### headline = asterisk+ mixedLineUntilEOL EOL
-### list = listunordered / listordered
-### listunordered = multiwhitespace ("-" / "+") mixedLineUntilEOL
-###     
-### listordered = multiwhitespace [0-9]+ ("." / ")") mixedLineUntilEOL
-###     
-### line = (!EOL .)* EOL
-### 
+heading = heading-bullet oneormore-whitespace (!EOL mixedtext)* <EOL>
+
+heading-bullet = #'^\*'+
+
+mixed-line-until-EOL = oneormore-whitespace (!EOL mixedtext)* <EOL>
+
+list = listunordered / listordered
+list-bullet   = ('-' | '+' | '*')
+listunordered = oneormore-whitespace list-bullet mixed-line-until-EOL
+list-number   = #'[0-9]+' ('.' | ')')
+listordered   = oneormore-whitespace list-number mixed-line-until-EOL
+
 ### specialblock = (specialblocksource / specialblockquote / specialblockcatchall)
-### rule specialblockcatchall = "#+" ("begin" / "BEGIN") (!EOL .)* EOL (!"#+end" !"#+END" .)* ("#+end" / "#+END") (!EOL .)* EOL
-### specialblockquote = "#+" ("begin_quote" / "BEGIN_QUOTE") (!EOL .)* EOL (!"#+end_quote" !"#+END_QUOTE" .)* ("#+end_quote" / "#+END_QUOTE") (!EOL [\s])* EOL
-### specialblocksource = "#+" ("begin_src" / "BEGIN_SRC") (!EOL .)* EOL (!"#+end_src" !"#+END_SRC" .)* ("#+end_src" / "#+END_SRC") (!EOL [\s])* EOL
-### comment = EOL? "#" (!EOL .)+ EOL
+### rule specialblockcatchall = '#+' ('begin' / 'BEGIN') (!EOL .)* EOL (!'#+end' !'#+END' .)* ('#+end' / '#+END') (!EOL .)* EOL
+### specialblockquote = '#+' ('begin_quote' / 'BEGIN_QUOTE') (!EOL .)* EOL (!'#+end_quote' !'#+END_QUOTE' .)* ('#+end_quote' / '#+END_QUOTE') (!EOL [\s])* EOL
+### specialblocksource = '#+' ('begin_src' / 'BEGIN_SRC') (!EOL .)* EOL (!'#+end_src' !'#+END_SRC' .)* ('#+end_src' / '#+END_SRC') (!EOL [\s])* EOL
+
+comment = <comment-inline-marker> (!EOL any)+ EOL?
+comment-inline-marker = '#'
